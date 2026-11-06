@@ -580,6 +580,11 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
 
           </div>
         )}
+        {/* Footer / Last Updated */}
+<div className="text-center mt-8 text-xs text-slate-400 font-medium">
+  <p>Terakhir diperbarui: 6 November 2026</p>
+  <p>© 2026 Wuling Arista Lampung - Alessandro Farrel Gerrard Wijaya</p>
+</div>
 
       </div>
     </div>
