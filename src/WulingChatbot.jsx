@@ -57,7 +57,7 @@ export default function WulingChatbot() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('https://kalkulator-wuling-be.onrender.com/api/chat', {
+  const response = await fetch('https://kalkulator-wuling-be.onrender.com/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
