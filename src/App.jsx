@@ -1,8 +1,31 @@
 import { useState } from 'react';
+import WulingChatbot from './WulingChatbot';
 
 export default function App() {
-  // State Kalkulator
-  const [jarakBulanan, setJarakBulanan] = useState(1000); // Default 1.000 km/bulan (12.000 km/tahun)
+  // ==========================================
+  // KONFIGURASI TIM SALES WULING ARISTA LAMPUNG
+  // ==========================================
+  const salesTeam = {
+    "farrel": { 
+      nama: "Alessandro Farrel Gerrard Wijaya", 
+      wa: "6285768390480", 
+      jabatan: "Sales Executive Wuling Arista Lampung" 
+    },
+    "ady": { 
+      nama: "Mas Ady", 
+      wa: "6285768390481", // Ganti dengan nomor WhatsApp asli Mas Ady
+      jabatan: "Sales Executive Wuling Arista Lampung" 
+    },
+    // Kamu bisa tambahkan rekan sales lain di sini dengan format yang sama:
+    // "budi": { nama: "Mas Budi", wa: "6281234567890", jabatan: "Sales Executive Wuling Arista Lampung" }
+  };
+
+  // Mendeteksi parameter ?sales=nama di URL browser secara otomatis
+  const queryParams = new URLSearchParams(window.location.search);
+  const salesKey = queryParams.get('sales') || 'farrel'; // Default ke Farrel jika tidak ada parameter
+  const activeSales = salesTeam[salesKey] || salesTeam['farrel'];
+
+  const [jarakBulanan, setJarakBulanan] = useState(1000);
   const [tipeEV, setTipeEV] = useState('Aira EV');
   const [opsiTarifListrik, setOpsiTarifListrik] = useState('1444.70');
   const [profilBBM, setProfilBBM] = useState('LCGC');
@@ -10,7 +33,6 @@ export default function App() {
   const [tampilkanPricelist, setTampilkanPricelist] = useState(false);
   const [kategoriAktif, setKategoriAktif] = useState('Semua');
 
-  // Data Spesifikasi Wuling EV sesuai Brosur (Gambar 1-4)
   const dataEV = {
     'Aira EV': {
       nama: 'Wuling Aira EV (Standard Range)',
@@ -50,7 +72,6 @@ export default function App() {
     }
   };
 
-  // Data Pembanding BBM / Diesel sesuai Brosur (Gambar 2 & 4)
   const dataPembanding = {
     'LCGC': {
       nama: 'LCGC 4-Seater (Pertalite)',
@@ -72,7 +93,6 @@ export default function App() {
     }
   };
 
-  // Data Pricelist November Wuling Arista Lampung (Gambar 5 & 6)
   const pricelistData = [
     {
       kategori: 'NEW BINGUO EV',
@@ -166,25 +186,21 @@ export default function App() {
     }
   ];
 
-  // Kalkulasi Energi
   const evTerpilih = dataEV[tipeEV];
   const bbmTerpilih = dataPembanding[profilBBM];
   const tarifKwh = parseFloat(opsiTarifListrik);
 
-  // 1. Biaya EV
   const biayaSekaliCas = evTerpilih.bateraiKwh * tarifKwh;
   const biayaEvPerKm = biayaSekaliCas / evTerpilih.jarakTempuhKm;
   const biayaEvBulanan = biayaEvPerKm * jarakBulanan;
   const biayaEvTahunan = biayaEvBulanan * 12;
 
-  // 2. Biaya BBM / Diesel
   const biayaBbmPerKm = bbmTerpilih.hargaPerLiter / bbmTerpilih.konsumsiKmPerLiter;
   const biayaBbmBulanan = biayaBbmPerKm * jarakBulanan;
   const biayaBbmTahunan = biayaBbmBulanan * 12;
 
-  // 3. Pajak & Servis Tahunan (Sesuai Gambar 1: Eksion EV vs Mobil Bensin)
-  const pajakServisBbmTahunan = hitungPajakServis ? (3000000 + 2000000) : 0; // Pajak 3jt + Servis 2jt
-  const pajakServisEvTahunan = hitungPajakServis ? (150000 + 400000) : 0;   // Pajak 150rb + Servis 400rb
+  const pajakServisBbmTahunan = hitungPajakServis ? (3000000 + 2000000) : 0;
+  const pajakServisEvTahunan = hitungPajakServis ? (150000 + 400000) : 0;
 
   const totalPengeluaranBbmTahun = biayaBbmTahunan + pajakServisBbmTahunan;
   const totalPengeluaranEvTahun = biayaEvTahunan + pajakServisEvTahunan;
@@ -194,7 +210,6 @@ export default function App() {
   const hematLimaTahun = hematTotalTahunan * 5;
   const persentaseHemat = ((totalPengeluaranBbmTahun - totalPengeluaranEvTahun) / totalPengeluaranBbmTahun) * 100;
 
-  // Format Rupiah
   const formatRp = (angka) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -203,8 +218,8 @@ export default function App() {
     }).format(angka);
   };
 
-  // Generate Pesan WhatsApp
-  const pesanWA = `Halo Mas Farrel (Wuling Arista Lampung), saya baru mencoba simulasi Kalkulator Penghematan & Pricelist Wuling.
+  // Pesan WhatsApp otomatis disesuaikan dengan Sales yang aktif di URL
+  const pesanWA = `Halo ${activeSales.nama} (${activeSales.jabatan}), saya baru mencoba simulasi Kalkulator Penghematan & Pricelist Wuling Arista Lampung.
 
 *Hasil Simulasi Saya:*
 - Mobil Pilihan: *${evTerpilih.nama}*
@@ -213,14 +228,14 @@ export default function App() {
 
 Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan November untuk unit ini?`;
 
-  const urlWA = `https://wa.me/6285768390480?text=${encodeURIComponent(pesanWA)}`;
+  const urlWA = `https://wa.me/${activeSales.wa}?text=${encodeURIComponent(pesanWA)}`;
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 px-4 font-sans text-slate-800">
       <div className="max-w-3xl mx-auto space-y-6">
         
         {/* KARTU UTAMA KALKULATOR */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 animate-fade-in-up">
           
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-800 via-blue-700 to-cyan-600 p-6 text-white text-center">
@@ -231,7 +246,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
               Simulasi Biaya Energi & Penghematan EV
             </h1>
             <p className="text-blue-100 text-sm">
-              Bandingkan pengeluaran Bensin/Diesel Anda dengan lini Wuling EV terbaru
+              Dilayani oleh: <strong className="text-white">{activeSales.nama}</strong>
             </p>
           </div>
 
@@ -239,14 +254,14 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
             
             {/* Pilih Mobil Wuling EV & Kendaraan Saat Ini */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-blue-50/60 p-4 rounded-xl border border-blue-100">
+              <div className="bg-blue-50/60 p-4 rounded-xl border border-blue-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <label className="block text-xs font-bold uppercase text-blue-800 mb-2">
                   1. Pilih Mobil Wuling EV
                 </label>
                 <select
                   value={tipeEV}
                   onChange={(e) => setTipeEV(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-blue-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full p-2.5 bg-white border border-blue-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition"
                 >
                   {Object.keys(dataEV).map((key) => (
                     <option key={key} value={key}>{dataEV[key].nama}</option>
@@ -257,14 +272,14 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                 </p>
               </div>
 
-              <div className="bg-red-50/60 p-4 rounded-xl border border-red-100">
+              <div className="bg-red-50/60 p-4 rounded-xl border border-red-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <label className="block text-xs font-bold uppercase text-red-800 mb-2">
                   2. Bandingkan Dengan Mobil BBM
                 </label>
                 <select
                   value={profilBBM}
                   onChange={(e) => setProfilBBM(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-red-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-red-500 outline-none"
+                  className="w-full p-2.5 bg-white border border-red-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-red-500 outline-none transition"
                 >
                   {Object.keys(dataPembanding).map((key) => (
                     <option key={key} value={key}>{dataPembanding[key].nama}</option>
@@ -281,7 +296,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
               <div>
                 <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
                   <span>Jarak Tempuh per Bulan</span>
-                  <span className="text-blue-700">{jarakBulanan.toLocaleString('id-ID')} KM / bln</span>
+                  <span className="text-blue-700 transition-all">{jarakBulanan.toLocaleString('id-ID')} KM / bln</span>
                 </label>
                 <input
                   type="range"
@@ -297,7 +312,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                   <button 
                     type="button"
                     onClick={() => setJarakBulanan(1500)}
-                    className="text-blue-600 underline font-medium"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium transition"
                   >
                     Set 18.000 km/thn
                   </button>
@@ -311,7 +326,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                 <select
                   value={opsiTarifListrik}
                   onChange={(e) => setOpsiTarifListrik(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition"
                 >
                   <option value="1444.70">Cas di Rumah (Rp 1.444,70 / kWh)</option>
                   <option value="1700">Cas di Rumah 6600W (Rp 1.700 / kWh)</option>
@@ -320,8 +335,11 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
               </div>
             </div>
 
-            {/* Toggle Pajak & Servis Tahunan (Sesuai Brosur Gambar 1) */}
-            <div className="flex items-center justify-between bg-amber-50 border border-amber-200 px-4 py-3 rounded-xl">
+            {/* Toggle Pajak & Servis Tahunan */}
+            <div 
+              onClick={() => setHitungPajakServis(!hitungPajakServis)}
+              className="flex items-center justify-between bg-amber-50 hover:bg-amber-100/70 border border-amber-200 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200"
+            >
               <div>
                 <p className="text-sm font-bold text-amber-900">
                   Sertakan Komponen Pajak & Servis Tahunan?
@@ -333,15 +351,14 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
               <input
                 type="checkbox"
                 checked={hitungPajakServis}
-                onChange={(e) => setHitungPajakServis(e.target.checked)}
+                onChange={() => {}}
                 className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
               />
             </div>
 
             {/* Hasil Perbandingan Detail */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Kolom EV */}
-              <div className="bg-emerald-50/70 border-2 border-emerald-500 rounded-xl p-4 space-y-2">
+              <div className="bg-emerald-50/70 border-2 border-emerald-500 rounded-xl p-4 space-y-2 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-extrabold uppercase tracking-wider bg-emerald-600 text-white px-2.5 py-0.5 rounded">
                     ⚡ {evTerpilih.nama}
@@ -364,7 +381,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                     <span className="font-semibold text-slate-800">{formatRp(biayaEvTahunan)}</span>
                   </div>
                   {hitungPajakServis && (
-                    <div className="flex justify-between text-emerald-700">
+                    <div className="flex justify-between text-emerald-700 animate-pop-in">
                       <span>Pajak (Rp150rb) + Servis (Rp400rb):</span>
                       <span className="font-semibold">{formatRp(pajakServisEvTahunan)}</span>
                     </div>
@@ -376,8 +393,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                 </div>
               </div>
 
-              {/* Kolom BBM */}
-              <div className="bg-rose-50/70 border border-rose-300 rounded-xl p-4 space-y-2">
+              <div className="bg-rose-50/70 border border-rose-300 rounded-xl p-4 space-y-2 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-extrabold uppercase tracking-wider bg-rose-600 text-white px-2.5 py-0.5 rounded">
                     ⛽ {bbmTerpilih.nama}
@@ -400,7 +416,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                     <span className="font-semibold text-slate-800">{formatRp(biayaBbmTahunan)}</span>
                   </div>
                   {hitungPajakServis && (
-                    <div className="flex justify-between text-rose-700">
+                    <div className="flex justify-between text-rose-700 animate-pop-in">
                       <span>Pajak (Rp3jt) + Servis (Rp2jt):</span>
                       <span className="font-semibold">{formatRp(pajakServisBbmTahunan)}</span>
                     </div>
@@ -414,13 +430,13 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
             </div>
 
             {/* Banner Total Penghematan */}
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl p-5 shadow-lg">
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
                 <div>
                   <span className="text-xs uppercase tracking-wider font-bold bg-white/20 px-2.5 py-1 rounded-full">
                     Potensi Hemat {persentaseHemat.toFixed(1)}% Lebih Rendah
                   </span>
-                  <h2 className="text-3xl md:text-4xl font-extrabold mt-2">
+                  <h2 className="text-3xl md:text-4xl font-extrabold mt-2 transition-all">
                     {formatRp(hematTotalTahunan)} <span className="text-lg font-normal">/ tahun</span>
                   </h2>
                   <p className="text-emerald-100 text-xs mt-1">
@@ -431,9 +447,9 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                   href={urlWA}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full md:w-auto bg-white text-emerald-700 hover:bg-emerald-50 font-extrabold py-3.5 px-6 rounded-xl shadow-md transition-all active:scale-95 text-sm whitespace-nowrap text-center"
+                  className="w-full md:w-auto bg-white text-emerald-700 hover:bg-emerald-50 hover:scale-105 active:scale-95 font-extrabold py-3.5 px-6 rounded-xl shadow-md transition-all duration-200 text-sm whitespace-nowrap text-center"
                 >
-                  📲 Klaim Promo & Hitung Kredit
+                  📲 Klaim Promo ke {activeSales.nama.split(' ')[0]}
                 </a>
               </div>
             </div>
@@ -443,25 +459,24 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
               <button
                 type="button"
                 onClick={() => setTampilkanPricelist(!tampilkanPricelist)}
-                className="w-full bg-blue-900 hover:bg-blue-950 text-white font-bold py-3.5 px-6 rounded-xl shadow transition-all flex justify-center items-center gap-2 text-sm"
+                className="w-full bg-blue-900 hover:bg-blue-950 hover:shadow-lg active:scale-[0.99] text-white font-bold py-3.5 px-6 rounded-xl shadow transition-all duration-200 flex justify-center items-center gap-2 text-sm"
               >
                 <span>📋 {tampilkanPricelist ? 'Sembunyikan' : 'Lihat'} Pricelist Wuling Terbaru (November) & Promo Binguo MY26</span>
-                <span>{tampilkanPricelist ? '▲' : '▼'}</span>
+                <span className={`transition-transform duration-300 ${tampilkanPricelist ? 'rotate-180' : ''}`}>▼</span>
               </button>
             </div>
 
           </div>
         </div>
 
-        {/* SECTION PRICELIST NOVEMBER & PROMO BINGUO MY26 (Muncul Saat Tombol Ditekan) */}
+        {/* SECTION PRICELIST NOVEMBER & PROMO BINGUO MY26 */}
         {tampilkanPricelist && (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 animate-fadeIn space-y-6 p-6">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 animate-fade-in-up space-y-6 p-6">
             
-            {/* Highlight Banner: Promo Spesial Binguo MY26 Interior Baru (Gambar 6) */}
             <div className="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border-2 border-amber-400 rounded-2xl p-5 shadow-sm">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-4">
                 <div>
-                  <span className="bg-red-600 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                  <span className="bg-red-600 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse inline-block">
                     🔥 Promo Spesial November • NEW MY26
                   </span>
                   <h3 className="text-xl font-extrabold text-slate-900 mt-2">
@@ -473,9 +488,8 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                 </div>
               </div>
 
-              {/* Detail Upgrade Interior Baru Binguo MY26 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-xs">
-                <div className="bg-white p-3.5 rounded-xl border border-amber-200 space-y-1.5">
+                <div className="bg-white p-3.5 rounded-xl border border-amber-200 space-y-1.5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                   <span className="font-extrabold text-amber-800 text-sm">✨ NEW BINGUO LITE MY26</span>
                   <ul className="list-disc list-inside text-slate-700 space-y-1">
                     <li><strong>Transmisi Baru:</strong> Kini berada di samping kiri setir</li>
@@ -489,7 +503,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                   </div>
                 </div>
 
-                <div className="bg-white p-3.5 rounded-xl border border-amber-200 space-y-1.5">
+                <div className="bg-white p-3.5 rounded-xl border border-amber-200 space-y-1.5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                   <span className="font-extrabold text-amber-800 text-sm">🌟 NEW BINGUO PRO MY26</span>
                   <ul className="list-disc list-inside text-slate-700 space-y-1">
                     <li><strong>Fitur Lengkap:</strong> <em>Wireless Charging 50W</em> + Console tengah baru</li>
@@ -505,7 +519,6 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
               </div>
             </div>
 
-            {/* Daftar Harga OTR Lengkap (Gambar 5) */}
             <div>
               <div className="text-center mb-4">
                 <h3 className="text-xl font-extrabold text-blue-900">
@@ -522,9 +535,9 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                   <button
                     key={kat}
                     onClick={() => setKategoriAktif(kat)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 active:scale-95 ${
                       kategoriAktif === kat
-                        ? 'bg-blue-700 text-white shadow'
+                        ? 'bg-blue-700 text-white shadow scale-105'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
@@ -536,11 +549,11 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
               {/* Grid Tabel Pricelist */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {pricelistData
-                  .filter(grup => kategoriAktif === 'Semua' || grup.kategori === kategoriAktif)
+                  .filter(grup => kategoriAktif === 'Semual' || grup.kategori === kategoriAktif)
                   .map((grup) => (
                     <div
                       key={grup.kategori}
-                      className={`rounded-xl border overflow-hidden ${
+                      className={`rounded-xl border overflow-hidden animate-pop-in hover:shadow-md transition-all duration-300 ${
                         grup.highlightPromo ? 'border-amber-400 bg-amber-50/20' : 'border-slate-200 bg-slate-50/50'
                       }`}
                     >
@@ -554,7 +567,7 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
                       </div>
                       <div className="divide-y divide-slate-200 p-3">
                         {grup.items.map((item, idx) => (
-                          <div key={idx} className="py-2 flex justify-between items-center text-xs">
+                          <div key={idx} className="py-2 flex justify-between items-center text-xs hover:bg-white/80 px-1 rounded transition">
                             <span className="font-semibold text-slate-700 pr-2">{item.tipe}</span>
                             <div className="text-right whitespace-nowrap">
                               {item.promo ? (
@@ -580,11 +593,15 @@ Boleh minta info promo DP ringan, simulasi kredit, atau diskon terbaru bulan Nov
 
           </div>
         )}
+
         {/* Footer / Last Updated */}
-<div className="text-center mt-8 text-xs text-slate-400 font-medium">
-  <p>Terakhir diperbarui: 6 November 2026</p>
-  <p>© 2026 Wuling Arista Lampung - Alessandro Farrel Gerrard Wijaya</p>
-</div>
+        <div className="text-center mt-8 text-xs text-slate-400 font-medium">
+          <p>Terakhir diperbarui: 6 November 2026</p>
+          <p>© 2026 Wuling Arista Lampung - Alessandro Farrel Gerrard Wijaya</p>
+        </div>
+
+        {/* Komponen Floating Chatbot Kanan Bawah */}
+        <WulingChatbot />
 
       </div>
     </div>
