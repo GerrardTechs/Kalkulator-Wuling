@@ -147,7 +147,7 @@ export default function WulingChatbot() {
   })();
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 font-sans">
+    <div className="fixed bottom-20 right-5 z-50 font-sans">
       {isOpen && (
         <div className="bg-white w-81 sm:w-96 h-[560px] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden mb-3 animate-pop-in origin-bottom-right">
           
